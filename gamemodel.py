@@ -62,7 +62,7 @@ class Game:
 
     """ Start a new round with a random wind value (-10 to +10) """
     def newRound(self):
-        self.setCurrentWind(random.randint(-10,10)) # anropar setCurrentWind för aktuell spelare och genererar en slumpmässig integer mellan -10 och 10 som representerar vindhastighet
+        self.setCurrentWind(random.randint(-10,10)) # anropar setCurrentWind för spelomgången och genererar en slumpmässig integer mellan -10 och 10 som representerar vindhastighet
 
 
 """ Models a player """
