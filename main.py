@@ -14,11 +14,26 @@ def graphicFire(game, angle, vel):
     return gproj
 
 def graphicPlay():
+    game = Game(10,3)
+    ggame = GraphicGame(game) # för det grafiska gränssnittet Graphicgame anropas modellen med kontruktorn Game(cannonSize: 10, ballSize: 3)
+
+    while True:
+        dialog = InputDialog(game.getCurrentPlayer().getAim()[0], game.getCurrentPlayer().getAim()[1], game.getCurrentWind())
+        choice = dialog.interact() # kollar vart man klickat och returnera fire eller quit
+        dialog.close()
+
+        if choice == "Quit":
+            break
+
+        angle, velocity = dialog.getValues()
+        proj = graphicFire(game, angle, velocity)
+        
+
     # TODO: This is where you implement the game loop
-    # HINT: Creating a GraphicGame is a good start. 
+    # HINT: Creating a GraphicGame is a good start.
     # HINT: You can look at the text interface for some inspiration
     # Note that this code should not directly work with any drawing or such, all that is done by the methods in the classes
-    pass
+
 
 
 # Run the game with graphical interface

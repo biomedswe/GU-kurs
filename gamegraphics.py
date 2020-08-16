@@ -19,10 +19,11 @@ from random import randint
 class GraphicGame:
     def __init__(self,game):
         self.model = game
-        self.model.players[0] = GraphicPlayer(self.model.players[0])
-        self.model.players[1] = GraphicPlayer(self.model.players[1])
-        self.win = GraphWin("Cannon game", 640, 480, autoflush=False)
-        self.win.setCoords(-110,-10,110,155)
+        self.win = win = GraphWin("Cannon game", 640, 480, autoflush=False)
+        win.setCoords(-110,-10,110,155)
+        self.model.players[0] = GraphicPlayer(self.model.players[0], self) # self på slutet skickar med GraphicGame objektet till GraphicPlayer
+        self.model.players[1] = GraphicPlayer(self.model.players[1], self)
+        Line(Point(-110,0),Point(110,0)).draw(win) # ritar en linje som symboliserar marken
 
     def getPlayers(self):
         return self.model.getPlayers()
@@ -58,48 +59,45 @@ class GraphicGame:
         return self.model.getCurrentWind()
 
     def newRound(self):
-        self.model.setCurrentWind(randint(-10,10))
+        self.model.newRound()
 
     def getWindow(self):
         return self.win
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# TODO: In addition to the methods of Game, GraphicGame needs to have a getWindow method that returns the main GraphWin object the game is played in
-# HINT: Look at the other classes in this file, the GraphicGame class should "wrap around" a Game object the same way GraphicPlayer wraps around a Player
-
 # HINT: Don't forget to call draw() on every component you create, otherwise they will not be visible
 # HINT: You need to get the Players from the Game object (the model), wrap them into GraphicPlayers and store them, and all get-methods for players (e.g. getCurrentPlayer) must return the Graphical versions
 
 class GraphicPlayer:
-    def __init__(self, player):
+    def __init__(self, player, game):
         self.player = player
-        "GraphicPlayer created"
-    # TODO: We need a constructor here! The constructor needs to take a Player object as parameter and store it in self.player for the methods below to work.
-    # HINT: The constructor should create and draw the graphical elements of the player (score and cannon)
-    # HINT: The constructor probably needs a few additional parameters e.g. to access the game window.
+        self.game = game
+        print("GraphicPlayer created")
+        self.proj = None # retuner ett None objekt om proj inte skapats än, används för att köra undraw() i .fire()
+        # Skapar "kanonen" i form av en rektangel
+        p1 = Point(player.xPos - game.getCannonSize() / 2, 0) # centrum för player (x) - halva storleken på kanonen, och y = 0
+        p2 = Point(player.xPos + game.getCannonSize() / 2, game.getCannonSize()) # centrum för player (x) + halva storleken på kanonen, y = cannonSize (10)
+        cannon = Rectangle(p1,p2) # skapar en rektangel (kanon), med punkterna p1 och p2
+        cannon.setFill(player.getColor()) # sätter färgen till spelarens färg i modellen för player
+        cannon.setOutline(player.getColor()) # Gör ytterkanten på rektangeln i samma färg som fyllnaden
+        cannon.draw(game.getWindow()) # ritar kanonen genom att anropa game.getWindow() metoden
+        self.scoreCounter = Text(Point(self.getX(), -5), "Score: 0") # placerar scoreCounter med texten "Score: 0"
+        self.scoreCounter.draw(game.getWindow()) # ritar scoreCounter
 
-    def fire(self, angle, vel):
+
+
+    def fire(self, angle, velocity):
         # Fire the cannon of the underlying player object
-        proj = self.player.fire(angle, vel)
+        proj = self.player.fire(angle, velocity) # projektilmodellen som används för grafiken
 
-        #TODO: We need to undraw the old GraphicProjectile for this player (if there is one).
+        if self.proj: # om self.proj == True -> undraw(), när den är None är den false
+            self.proj.undraw()
 
-        # TODO: proj is a Projectile, but we should return a GraphicProjectile here! We need to create a GraphicProjectile "wrapping" around proj.
+        self.proj = GraphicProjectile(proj, self.game, self.player)
+
+
+
         return proj
 
     def getAim(self):
@@ -119,11 +117,19 @@ class GraphicPlayer:
 
     def increaseScore(self):
         self.player.increaseScore()
-        # TODO: This seems like a good place to update the score text.
+        self.scoreCounter.setText("Score: " + str(self.getScore()))
 
 
 """ A graphic wrapper around the Projectile class (adapted from ShotTracker in book)"""
 class GraphicProjectile:
+    def __init__(self, proj, game, player):
+        self.game = game
+        self.proj = proj
+        self.player = player
+        self.cannonball = Circle(Point(proj.getX(), proj.getY()), self.game.getBallSize())
+        self.cannonball.setFill(self.player.getColor())
+        self.cannonball.setOutline(self.player.getColor())
+        self.cannonball.draw(game.getWindow())
     # TODO: This one also needs a constructor, and it should take a Projectile object as parameter and store it in self.proj.
     # Hint: We are also going to need access to the game window
     # Hint: There is no color attribute in the Projectile class, either it needs to be passed to the constructor here or Projectile needs to be modified.
@@ -131,7 +137,11 @@ class GraphicProjectile:
     def update(self, dt):
         # update the projectile
         self.proj.update(dt)
-        # TODO: Graphic stuff needs to happen here.
+
+        center = self.cannonball.getCenter()
+        dx = self.proj.getX() - center.getX()
+        dy = self.proj.getY() - center.getY()
+        self.cannonball.move(dx,dy)
 
     def getX(self):
         return self.proj.getX()
@@ -141,6 +151,9 @@ class GraphicProjectile:
 
     def isMoving(self):
         return self.proj.isMoving()
+
+    def undraw(self):
+        self.cannonball.undraw()
 
     # TODO: There needs to be a way of undrawing the projectile.
     # HINT: All graphical components in graphics.py have undraw()-methods

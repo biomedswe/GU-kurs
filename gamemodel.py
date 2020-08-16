@@ -80,15 +80,12 @@ class Player:
     def fire(self, angle, velocity):
         wind = self.game.getCurrentWind()
         xPos = self.getX()
-        self.fireDir = angle # tilldelar firing direction för aktuellt skott
+        self.fireDir = angle # tilldelar skjutriktning för aktuellt skott
         self.vel = velocity
         if self.color == 'blue':
             self.proj = Projectile(self.fireDir, self.vel, wind, xPos, self.yPos , -110, 110)
         else:
             self.proj = Projectile(180 - self.fireDir, self.vel, wind, xPos, self.yPos , -110, 110)
-        # The projectile should start in the middle of the cannon of the firing player
-        # HINT: Your job here is to call the constructor of Projectile with all the right values
-        # Some are hard-coded, like the boundaries for x-position, others can be found in Game or Player
         return self.proj
 
 

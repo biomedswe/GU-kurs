@@ -146,7 +146,6 @@ def testGraphics(ggame):
     everything = w.items
     circles = [x for x in w.items if type(x) == circ_type]
     rectangles = [x for x in w.items if type(x) == rect_type]
-
     assert len(circles) == 2, "there should be two circles drawn after running tests"
     assert len(rectangles) == 2, "there should be two rectangles initially"
 
@@ -161,7 +160,7 @@ def testGraphics(ggame):
     circles = [x for x in w.items if type(x) == circ_type]
 
     assert len(circles) <= 2, "there should never be more than two circles! You need to undraw old cannonballs"
-
+    
 
 runTests(gamemodel.Game(10,3))
 
